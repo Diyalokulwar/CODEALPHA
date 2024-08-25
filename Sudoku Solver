@@ -1,0 +1,81 @@
+#include<iostream>
+using namespace std;
+void display(int board[4][4])
+{   //prints the 4 by 4 matrix
+    for (int i = 0; i < 4; i++)
+ {  cout << "| ";                              
+    for (int j = 0; j < 4; j++) { cout << board[i][j] << " | "; }
+        cout<<endl;  }
+    cout << " " <<endl;
+}
+bool check(int table[4][4],int r,int c,int num)
+{   
+    // if the same number is present in row 
+    for(int x=0;x<=3;x++)
+    {
+        if(table[r][x]==num)
+        return false;
+    }
+    // if the same number is present in the column
+    for(int x=0;x<=3;x++)
+    {
+        if(table[x][c]==num)
+        return false;
+    }
+    // if the same number is present in the 2 by 2 matrix
+    int R= r - r % 2 ,C = c - c % 2;
+    for (int i = 0; i < 2; i++)
+     {   for (int j = 0; j < 2; j++)
+         {   if (table[i + R][j + C] == num)
+                return false;
+         }
+     }
+     // If same number is not present returning true
+     return true;
+}
+bool solve(int table[4][4], int r, int c)
+{  //check if we reached the end of the row
+    if (r ==3  && c == 4)
+        return true;
+    //moving to next row
+    if (c == 4)
+    {   r++;
+        c = 0;
+    }
+    
+    if (table[r][c] > 0)
+        return solve(table, r, c + 1);
+    
+    for (int num = 1; num <= 4; num++) 
+    {  //checking if it is ok to place 1-4 
+       // moving to next column
+        if (check(table, r, c, num)) 
+        {
+            //assigning the number 
+            table[r][c] = num;
+            if (solve(table, r, c + 1))
+                return true;
+        }
+        table[r][c] = 0;
+    }
+    return false;
+}
+int main()
+{ //zero means unassigned values
+    int table[4][4] = { {3,0,0,1},
+                       {0,1,4,0},
+                       {4,0,0,0},
+                       {0,2,0,4} };
+    cout<<"Before solving:-"<<endl;
+     display(table);
+     
+    if (solve(table, 0, 0))
+     {   cout<<"After solving:-"<<endl;
+         display(table);
+     }
+    else
+        cout << "no solution  exists " << endl;
+        
+    return 0;
+}
+
