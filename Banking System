@@ -1,0 +1,62 @@
+#include <iostream>
+using namespace std;
+#include<stdio.h>
+#include<string.h>
+
+class bank
+{
+    int acc;
+    char nm[100];
+    float bal;
+   public:
+   bank(int acc_no,char*name,float balance)
+   {
+       acc=acc_no;
+       strcpy(nm,name);
+       bal=balance;
+   }
+   void deposit();
+   void withdraw();
+   void display();
+};
+void bank::deposit()
+{
+    int damt1;
+    cout<<"Enter deposit amount =";
+    cin>>damt1;
+    bal+=damt1;
+}
+void bank::withdraw()
+{
+    int wamt1;
+    cout<<"Enter withdraw amount =";
+    cin>>wamt1;
+    bal-=wamt1;
+}
+void bank::display()
+{
+    cout<<"\nAccount no.:"<<acc;
+    cout<<"\nName:"<<nm;
+    cout<<"\nBalance:"<<bal;
+}
+
+int main() {
+   int acc_no;
+   char name[100];
+   float balance;
+   cout<<"Enter details:- "<<endl;
+   
+   cout<<"Enter account no: ";
+   cin>>acc_no;
+   cout<<"Enter name: ";
+   cin>>name;
+   cout<<"Enter balance: ";
+   cin>>balance;
+   
+   bank b1(acc_no,name,balance);
+   b1.deposit();
+   b1.withdraw();
+   b1.display();
+
+    return 0;
+}
