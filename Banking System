@@ -1,62 +1,161 @@
 #include <iostream>
-using namespace std;
-#include<stdio.h>
-#include<string.h>
+#include <vector>
+#include <ctime>
 
-class bank
-{
-    int acc;
-    char nm[100];
-    float bal;
-   public:
-   bank(int acc_no,char*name,float balance)
-   {
-       acc=acc_no;
-       strcpy(nm,name);
-       bal=balance;
-   }
-   void deposit();
-   void withdraw();
-   void display();
+using namespace std;
+class Transaction {
+private:
+    int t_no;
+    int acc_no;
+    double amount;
+    string type; 
+    time_t timestamp;
+
+public:
+    Transaction(int tId, int accId, double amt, string typ)
+        : t_no(tId), acc_no(accId), amount(amt), type(typ) {
+        timestamp = time(0); 
+    }
+
+    void display() const {
+        cout << "Transaction no: " << t_no << endl;
+        cout << "Account no: " << acc_no << endl;
+        cout << "Amount: " << amount << endl;
+        cout << "Type: " << type << endl;
+        cout << "Timestamp: " << asctime(localtime(&timestamp));
+    }
 };
-void bank::deposit()
-{
-    int damt1;
-    cout<<"Enter deposit amount =";
-    cin>>damt1;
-    bal+=damt1;
-}
-void bank::withdraw()
-{
-    int wamt1;
-    cout<<"Enter withdraw amount =";
-    cin>>wamt1;
-    bal-=wamt1;
-}
-void bank::display()
-{
-    cout<<"\nAccount no.:"<<acc;
-    cout<<"\nName:"<<nm;
-    cout<<"\nBalance:"<<bal;
-}
+
+class Account {
+private:
+    int acc_no;
+    int cust_no;
+    double balance;
+    vector<Transaction> transactions;
+
+public:
+    Account(int acc, int cust, double initialBalance)
+        : acc_no(acc), cust_no(cust), balance(initialBalance) {}
+
+    void deposit(double amount) {
+        balance += amount;
+        Transaction trans(transactions.size() + 1, acc_no, amount, "deposit");
+        transactions.push_back(trans);
+    }
+
+    bool withdraw(double amount) {
+        if (balance >= amount) {
+            balance -= amount;
+            Transaction trans(transactions.size() + 1, acc_no, amount, "withdrawal");
+            transactions.push_back(trans);
+            return true;
+        }
+        return false;
+    }
+
+    void transfer(double amount, Account& targetAccount) {
+        if (withdraw(amount)) {
+            targetAccount.deposit(amount);
+            Transaction trans(transactions.size() + 1, acc_no, amount, "transfer");
+            transactions.push_back(trans);
+        }
+    }
+
+    double getBalance() const {
+        return balance;
+    }
+
+    void displayTransactions() const {
+        for (size_t i = 0; i < transactions.size(); ++i) {
+            transactions[i].display();
+        }
+    }
+
+    int getAccountId() const {
+        return acc_no;
+    }
+};
+
+class BankingSystem {
+private:
+    vector<Account> accounts;
+    int nextAccountId;
+
+public:
+    BankingSystem() : nextAccountId(1) {}
+
+    void addAccount(int cust_no, double initialBalance) {
+        Account acc(nextAccountId++, cust_no, initialBalance);
+        accounts.push_back(acc);
+    }
+
+    bool deposit(int acc_no, double amount) {
+        for (size_t i = 0; i < accounts.size(); ++i) {
+            if (accounts[i].getAccountId() == acc_no) {
+                accounts[i].deposit(amount);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool withdraw(int acc_no, double amount) {
+        for (size_t i = 0; i < accounts.size(); ++i) {
+            if (accounts[i].getAccountId() == acc_no) {
+                return accounts[i].withdraw(amount);
+            }
+        }
+        return false;
+    }
+
+    void transfer(int fromAccId, int toAccId, double amount) {
+        Account* fromAcc = 0; 
+        Account* toAcc = 0;
+
+        for (size_t i = 0; i < accounts.size(); ++i) {
+            if (accounts[i].getAccountId() == fromAccId) {
+                fromAcc = &accounts[i];
+            }
+            if (accounts[i].getAccountId() == toAccId) {
+                toAcc = &accounts[i];
+            }
+        }
+
+        if (fromAcc && toAcc) {
+            fromAcc->transfer(amount, *toAcc);
+        }
+    }
+
+    void displayAccountDetails(int accId) {
+        for (size_t i = 0; i < accounts.size(); ++i) {
+            if (accounts[i].getAccountId() == accId) {
+                cout << "Account ID: " << accId << endl;
+                cout << "Balance: " << accounts[i].getBalance() << endl;
+                cout << "Transaction History:" << endl;
+                accounts[i].displayTransactions();
+                return;
+            }
+        }
+        cout << "Account not found." << endl;
+    }
+};
 
 int main() {
-   int acc_no;
-   char name[100];
-   float balance;
-   cout<<"Enter details:- "<<endl;
-   
-   cout<<"Enter account no: ";
-   cin>>acc_no;
-   cout<<"Enter name: ";
-   cin>>name;
-   cout<<"Enter balance: ";
-   cin>>balance;
-   
-   bank b1(acc_no,name,balance);
-   b1.deposit();
-   b1.withdraw();
-   b1.display();
+    
+    BankingSystem bank;
+    
+    bank.addAccount(1, 1000);
+    bank.addAccount(2, 5000);
+
+    bank.deposit(1, 500);
+    bank.withdraw(2, 200);
+    bank.transfer(1, 2, 300);
+
+    cout << "Account 1 details:" << endl;
+    bank.displayAccountDetails(1);
+
+    cout << "\nAccount 2 details:" << endl;
+    bank.displayAccountDetails(2);
 
     return 0;
 }
